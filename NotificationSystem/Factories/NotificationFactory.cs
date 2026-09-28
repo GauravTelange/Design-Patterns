@@ -8,14 +8,14 @@ namespace NotificationSystem.Factories {
     // for deciding which concrete Notification type to instantiate.
     public static class NotificationFactory
     { 
-        public static Notification Create(string type, string message, string recipient)
+        public static Notification Create(string type, string message, string recipient, ISendStrategy sendStrategy)
         {
             switch (type.ToLower())
             {
                 case "email":
-                    return new EmailNotification(message, recipient);
+                    return new EmailNotification(message, recipient, sendStrategy);
                 case "sms":
-                    return new SmsNotification(message, recipient);
+                    return new SmsNotification(message, recipient, sendStrategy);
                 default:
                     throw new ArgumentException($"Unkown notification type; {type}");
             }

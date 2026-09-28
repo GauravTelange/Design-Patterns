@@ -1,15 +1,19 @@
+using NotificationSystem.Factories;
+
 namespace NotificationSystem.Models
 {
     // PATTERN: RIP - this class's own Send() replaces an if-check in the caller
 
     public class SmsNotification : Notification
     {
-        public SmsNotification(string message, string recipient) : base(message, recipient) { }
+        public SmsNotification(string message, string recipient, ISendStrategy sendStrategy) : base(message, recipient, sendStrategy) { }
 
 
-        public override void Send()
+        protected override bool Validate()
         {
-            Console.WriteLine($"Sending SMS to {Recipient}: {Message}");
+            return base.Validate() && Recipient.Length == 10;
         }
+
+        
     }
 }

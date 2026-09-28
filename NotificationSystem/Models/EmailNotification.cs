@@ -1,16 +1,17 @@
+using NotificationSystem.Factories;
+
 namespace NotificationSystem.Models
 {
-    // PATTERN: RIP - this class's own Send() replaces an if-check in the caller
+    // PATTERN: RIP (via base Send) + Template Method (Validate override) + Strategy (injected _sendStrategy)
     public class EmailNotification : Notification
     {
+
+        public EmailNotification(string message, string recipient, ISendStrategy sendStrategy)
+            : base(message, recipient, sendStrategy) { }
     
-        public EmailNotification( string message, string recipient) 
-            : base(message, recipient){ }
-
-        public override void Send()
+        protected override bool Validate()
         {
-            Console.WriteLine($"Sending Email to {Recipient}: {Message}");
-
+            return base.Validate() && Recipient.Contains("@");
         }
     }
 
