@@ -17,7 +17,7 @@ namespace NotificationSystem.Factories {
                 case "sms":
                     return new SmsNotification(message, recipient, sendStrategy);
                 default:
-                    throw new ArgumentException($"Unkown notification type; {type}");
+                    return  new NullNotification();
             }
 
 

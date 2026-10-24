@@ -19,6 +19,9 @@ urgentEmail.Process();
 Notification invalidEmail = new EmailNotification("Test", "noteanemail", new NormalSendStrategy());
 invalidEmail.Process();
 
+Notification smsViaGateway = new SmsNotification("Delivery Update", "9876543210", new SmsGatewayAdapter());
+smsViaGateway.Process();
+
 INotificationRepository repo = new NotificationRepository();
 repo.Save(email);
 repo.Save(sms);
@@ -29,3 +32,29 @@ foreach (var n in repo.GetAll())
 {
     Console.WriteLine($"To: {n.Recipient} | Message: {n.Message}");
 }
+
+Console.WriteLine("\n--Unit of Work Test ---");
+IUnitOfWork uow = new UnitOfWork();
+
+uow.AddNotification(email);
+uow.AddLog("Email is sent to gaurav@test.com");
+uow.Commit();
+
+uow.AddNotification(sms);
+uow.AddLog("SMS sent to 9876543210");
+uow.Rollback();
+
+Console.WriteLine($"Notification saved: {uow.Notification.GetAll().Count}");
+Console.WriteLine($"Logs saved: {uow.Logs.GetAll().Count}");
+
+
+Console.WriteLine("\n--Decorator Pattern Test ---");
+
+Notification retryEmail = new EmailNotification("Payment received","gaurav@test.com", new RetryDecorator(new FlakySendStrategy()));
+retryEmail.Process();
+
+
+Console.WriteLine("\n--Null Object Test ---");
+Notification unknown = NotificationFactory.Create("whatsapp","HI", "9876543210", new NullSendStrategy());
+unknown.Process();
+Console.WriteLine("Program continued safely");
