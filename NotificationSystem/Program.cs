@@ -1,6 +1,9 @@
 ﻿using NotificationSystem.Factories;
+using NotificationSystem.Mediators;
 using NotificationSystem.Models;
 using NotificationSystem.Repositories;
+using System;
+using System.Security.Cryptography;
 Notification email = NotificationFactory.Create("email", "Hello there!", "gaurav@test.com", new NormalSendStrategy());
 email.Process();
 
@@ -58,3 +61,70 @@ Console.WriteLine("\n--Null Object Test ---");
 Notification unknown = NotificationFactory.Create("whatsapp","HI", "9876543210", new NullSendStrategy());
 unknown.Process();
 Console.WriteLine("Program continued safely");
+
+Console.WriteLine("\n--Prototype Pattern Test ---");
+Notification original = new EmailNotification("Weekly newsletter","first@test.com", new NormalSendStrategy());
+
+Notification copy1 = original.Clone();
+copy1.Recipient = "second@test.com";
+
+Notification copy2 = original.Clone();
+copy2.Recipient = "third@test.com";
+
+original.Process();
+copy1.Process();
+copy2.Process();
+
+Console.WriteLine($"Same Object? {ReferenceEquals(original, copy1)}");
+
+Console.WriteLine("\n--Memento Pattern Test ---");
+Notification draft = new EmailNotification("Draft v1","draft@test.com", new NormalSendStrategy());
+NotificationHistory history = new NotificationHistory();
+
+history.Push(draft.Save());
+draft.Message = "Draft v2";
+
+history.Push(draft.Save());
+draft.Message = "Draft v3 (wrong edit)";
+Console.WriteLine($"Current : {draft.Message}");
+
+draft.Restore(history.Pop());
+Console.WriteLine($"After undo: {draft.Message}");
+
+draft.Restore(history.Pop());
+Console.WriteLine($"After second undo: {draft.Message}");
+
+
+Console.WriteLine("\n--Iterator Pattern Test ---");
+NotificationCollection collection = new NotificationCollection();
+collection.Add(email);
+collection.Add(sms);
+collection.Add(urgentEmail);
+
+Console.WriteLine("All Notifications:");
+foreach(var n in collection)
+{
+    Console.WriteLine($" {n.Recipient}");
+}
+
+Console.WriteLine("Only Emails:");
+foreach(var n in collection.onlyEmails())
+{
+    Console.WriteLine($" {n.Recipient}");
+}
+
+Console.WriteLine("\n--Mediator Pattern Test ---");
+INotificationMediator mediator = new NotificationMediator(new NotificationRepository(), new LogRepository());
+
+mediator.Dispatch(new EmailNotification("Welcome", "new@test.com", new NormalSendStrategy()));
+mediator.Dispatch(new EmailNotification("Bad","invalid", new NormalSendStrategy()));
+
+Console.WriteLine("\n--- Factory Method Test ---");
+NotificationCreator emailCreator = new EmailCreator();
+emailCreator.Notify("Welcome mail","user@test.com");
+
+NotificationCreator smsCreator = new SmsCreator();
+smsCreator.Notify("OTP 4321", "9876543210");
+
+NotificationCreator urgentCreator = new UrgentEmailCreator();
+urgentCreator.Notify("Server down", "admin@test.com"); 

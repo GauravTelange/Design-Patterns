@@ -25,15 +25,16 @@ namespace NotificationSystem.Models
         //Template Pattern 
         // Fixed sequence of steps - subclasses can override individual steps but never the order
 
-        public void Process()
+        public bool Process()
         {
             Prepare();
             if (!Validate())
             {
                 Console.WriteLine($"Validation failed for {Recipient}. Skipping send.");
-                return;
+                return false;
             }
             Send();
+            return true;
         }
 
         protected  virtual void Prepare()
@@ -48,6 +49,25 @@ namespace NotificationSystem.Models
         public void Send()
         {
             _sendStrategy.Send(this);
+        }
+
+        //Prototype Pattern
+        // Creates a copy of this notification so callers can change only whatdiffers
+
+        public Notification Clone()
+        {
+            return (Notification)this.MemberwiseClone();
+        }
+
+        public NotificationMemento Save()
+        {
+            return new NotificationMemento(Message, Recipient);
+        }
+
+        public void Restore(NotificationMemento memento)
+        {
+            Message = memento.Message;
+            Recipient = memento.Recipient;
         }
     }
 }
